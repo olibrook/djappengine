@@ -17,5 +17,10 @@ handlers:
   static_dir: core/static
   expiration: '1m'
 
+- url: /favicon.ico
+  static_files: favicon.ico
+  upload: favicon.ico
+
+
 - url: /.*
   script: main.app
