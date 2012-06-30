@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+sys.path.extend(['lib'])
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
@@ -13,16 +14,12 @@ import django.core.signals
 import django.dispatch
 import django.db
 
-sys.path.extend(['lib'])
-
-
 if not os.getenv('APPENGINE_PRODUCTION'):
     logging.info('Development django: %s' % django.__file__)
     logging.info(django.get_version())
 
 
 # Log exceptions
-
 def log_exception(*args, **kwds):
     logging.exception('Exception in request:')
 

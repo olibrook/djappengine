@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 import os, sys
+sys.path.extend(['lib'])
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
-
-# User dev_appserver.py for now
+# Don't allow `runserver`
 if 'runserver' in sys.argv:
     sys.stderr.write(
         "Error: please uses `dev_appserver.py` to run your development server\n")
     sys.exit(1)
-
 
 # Set up the python path using dev_appserver
 for path in os.environ.get('PATH').split(os.pathsep):
