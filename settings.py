@@ -22,8 +22,9 @@ MANAGERS = ADMINS
 # A custom cache backend using AppEngine's memcached
 CACHES = {
     'default': {
-        'BACKEND': 'appenginecache.CacheClass',
-        }
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'TIMEOUT': 0,
+    }
 }
 
 """
