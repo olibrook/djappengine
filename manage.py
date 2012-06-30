@@ -2,7 +2,7 @@
 
 import os, sys, subprocess
 
-# Remingd and django non-rel developers not to user `runserver`
+# Remind and django non-rel developers not to user `runserver`
 if 'runserver' in sys.argv:
     sys.stderr.write(
         "Error: please uses `dev_appserver.py` to run your development server\n")
