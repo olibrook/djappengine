@@ -26,7 +26,6 @@ if not os.getenv('APPENGINE_PRODUCTION'):
 def log_exception(*args, **kwds):
     logging.exception('Exception in request:')
 
-# Log errors.
 django.dispatch.Signal.connect(
     django.core.signals.got_request_exception, log_exception)
 
