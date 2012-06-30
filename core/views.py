@@ -1,7 +1,7 @@
 import logging
 from django.views.generic import TemplateView
 from django.conf import settings
-from set_trace import set_trace
+import pdb
 
 
 class HelloWorld(TemplateView):
