@@ -5,8 +5,8 @@ from core import views
 urlpatterns = patterns(
     '',
     url(r'^$', views.HelloWorld.as_view(), {}, name='hello-world'),
+    url(r'^__exception_test__/$', views.exception_test, {}),
 )
-
 
 if settings.DEBUG:
     urlpatterns += patterns(

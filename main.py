@@ -21,8 +21,7 @@ if not os.getenv('APPENGINE_PRODUCTION'):
     logging.info(django.get_version())
 
 
-# Logging configuration
-# see: http://code.google.com/appengine/articles/django.html
+# Log exceptions
 
 def log_exception(*args, **kwds):
     logging.exception('Exception in request:')
@@ -30,11 +29,6 @@ def log_exception(*args, **kwds):
 # Log errors.
 django.dispatch.Signal.connect(
     django.core.signals.got_request_exception, log_exception)
-
-# Unregister the rollback event handler.
-django.dispatch.Signal.disconnect(
-    django.core.signals.got_request_exception,
-    django.db._rollback_on_exception)
 
 # WSGI app
 import django.core.handlers.wsgi

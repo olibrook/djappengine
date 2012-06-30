@@ -17,5 +17,12 @@ class HelloWorld(TemplateView):
         return context
 
 
+def exception_test(request):
+    logging.debug('Debug log')
+    logging.warn('Warn log')
+    logging.error('Error log')
+    raise Exception()
+    
+
 
     
