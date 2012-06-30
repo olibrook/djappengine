@@ -1,16 +1,14 @@
 import os
 import sys
 
-PRODUCTION =\
-    os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine')\
-    or os.getenv('SETTINGS_MODE') == 'prod'
+APPENGINE_PRODUCTION = os.getenv('APPENGINE_PRODUCTION')
 
 HTTP_HOST = os.environ.get('HTTP_HOST')
 
 PROJDIR = os.path.abspath(os.path.dirname(__file__))
 APPDIR = os.path.join(PROJDIR, 'core')
 
-DEBUG = not PRODUCTION
+DEBUG = not APPENGINE_PRODUCTION
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
