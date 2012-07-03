@@ -22,7 +22,7 @@ The Django app in `core` is there to get you started. Have fun!
 
 ### app.yaml
 
-- Set’s up static resources
+- Sets up static resources
 - Points all other paths to the WSGI app
 
 
