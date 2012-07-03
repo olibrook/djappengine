@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
-import sys
-sys.path.extend(['lib'])
-
 from pypath import pypath
 pypath()
+import sys
 
-# Don't allow `runserver`
+# Don't allow `runserver` just yet, we haven't wrapped it here
 if 'runserver' in sys.argv:
     sys.stderr.write(
         "Error: please uses `dev_appserver.py` to run your development server\n")

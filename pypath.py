@@ -1,4 +1,5 @@
 import sys, os
+sys.path.extend(['lib'])
 
 def pypath():
     """ Setup the environment and python path for django and for dev_appserver.

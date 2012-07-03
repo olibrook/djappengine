@@ -25,6 +25,9 @@ CACHES = {
     }
 }
 
+# If you are using CloudSQL, you can comment out the next line
+TEST_RUNNER = 'lib.testrunnernodb.TestRunnerNoDb'
+
 """
 Custom session engine using our cache or writing through to the datastore If
 using SQL, can we use django's standard write through?  If gae memecached is
