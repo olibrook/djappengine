@@ -16,7 +16,21 @@ You're ready to deploy:
 
     appcfg.py update .
 
-The Django app in `core` is there to get you started. Have fun!
+The Django app in `core` is there to get you started. Have a look around.
+
+##Running tests
+
+    python manage.py test core
+    .
+    ----------------------------------------------------------------------
+    Ran 1 test in 0.000s
+
+djappengine uses a custom test runner that doesn't try to use a database. This is because djappengine is designed primarily to be used with 
+[App Engine's models](https://developers.google.com/appengine/docs/python/datastore/datamodeling), and not with Django's ORM. If you're using
+CloudSQL, comment out the [TEST_RUNNER](https://github.com/potatolondon/djappengine/blob/master/settings.py#L29) line in `settings.py`.
+
+[core/tests.py](https://github.com/potatolondon/djappengine/blob/master/core/tests.py) is an example test that sets App Engine's 
+[testbed](https://developers.google.com/appengine/docs/python/tools/localunittesting).
 
 ## So what's going on?
 
@@ -36,7 +50,7 @@ The Django app in `core` is there to get you started. Have fun!
 
 ### manage.py
 
-- Friendly reminder not to use runserver
+- Friendly reminder not to use `runserver`, use `appcfg.py` for now
 - Sorts out paths using dev_appserver
 
 ### settings.py
@@ -48,9 +62,17 @@ The Django app in `core` is there to get you started. Have fun!
 
 - Just points to core’s url config
 
-### lib/memcache
+### lib/pypath.py
+
+- Uses `dev_appserver` to set up the python path
+
+### lib/memcache.py
 
 - So App Engine's memcache is seen by django
+
+### lib/testrunnernodb.py
+
+- A custom test runner that lets you use Djanog's simple test runner to run tests with [App Engine's testbed](https://developers.google.com/appengine/docs/python/tools/localunittesting) and without a database.
 
 ### core
 
@@ -59,8 +81,4 @@ The Django app in `core` is there to get you started. Have fun!
 
 ## What's missing
 
-- A little more fiddling (nearly there)
-- Docs on deploying a 'hello world!', remote shell and testing
-- CloudSQL configuration and docs
-
-[Track progress here](https://github.com/potatolondon/djappengine/issues/milestones), we are on it.
+[What's missing? Have a suggestion?](https://github.com/potatolondon/djappengine/issues/milestones)
