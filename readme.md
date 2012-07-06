@@ -50,7 +50,7 @@ CloudSQL, comment out the [TEST_RUNNER](https://github.com/potatolondon/djappeng
 
 ### manage.py
 
-- Friendly reminder not to use `runserver`, use `appcfg.py` for now
+- Friendly reminder not to use `runserver`, use `dev_appserver.py` for now
 - Sorts out paths using dev_appserver
 
 ### settings.py
