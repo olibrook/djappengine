@@ -79,4 +79,4 @@ CloudSQL, comment out the [TEST_RUNNER](https://github.com/potatolondon/djappeng
 
 ## What's missing
 
-[Something missing? [please raise an issue](https://github.com/potatolondon/djappengine/issues?state=open).
+Something missing? [please raise an issue](https://github.com/potatolondon/djappengine/issues?state=open).
