@@ -6,7 +6,6 @@ APPENGINE_PRODUCTION = os.getenv('APPENGINE_PRODUCTION')
 HTTP_HOST = os.environ.get('HTTP_HOST')
 
 PROJDIR = os.path.abspath(os.path.dirname(__file__))
-APPDIR = os.path.join(PROJDIR, 'core')
 
 DEBUG = not APPENGINE_PRODUCTION
 TEMPLATE_DEBUG = DEBUG
@@ -89,6 +88,9 @@ USE_I18N = True
 # If you set this to False, Django will not format dates, numbers and
 # calendars according to the current locale
 USE_L10N = True
+
+# Use the new automatic timezone features Django 1.4 brings
+USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
