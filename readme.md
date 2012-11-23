@@ -24,6 +24,12 @@ You're ready to deploy:
 
 The Django app in `core` is there to get you started. Have a look around.
 
+## Local shell
+
+With your local server stopped, open a python shell and play with your local data:
+
+    ./shell
+
 ## Running tests
 
     python manage.py test core
