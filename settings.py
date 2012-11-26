@@ -34,7 +34,7 @@ stable enough, it would be faster to use
 django.contrib.sessions.backends.cache?
 """
 
-SESSION_ENGINE = "appengine_sessions.backends.cached_db"
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 # Uncomment these DB definitions to use Cloud SQL.
 # See: https://developers.google.com/cloud-sql/docs/django#development-settings
