@@ -45,7 +45,7 @@ class SessionStore(DBStore):
         key_name = 'session-%s' % session_key, raising CreateError if
         unsuccessful.
         """
-        s = Session.get_by_key_name('session-%s' % self.session_key)
+        s = Session.get_by_key_name('session-%s' % self._get_or_create_session_key())
         if must_create:
             if s:
                 raise CreateError()

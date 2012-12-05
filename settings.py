@@ -34,35 +34,32 @@ stable enough, it would be faster to use
 django.contrib.sessions.backends.cache?
 """
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_ENGINE = "appengine_sessions.backends.cached_db"
 
 # Uncomment these DB definitions to use Cloud SQL.
 # See: https://developers.google.com/cloud-sql/docs/django#development-settings
-
-"""
-import os
-if (os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine') or
-    os.getenv('SETTINGS_MODE') == 'prod'):
-    # Running on production App Engine, so use a Google Cloud SQL database.
-    DATABASES = {
-        'default': {
-            'ENGINE': 'google.appengine.ext.django.backends.rdbms',
-            'INSTANCE': 'my_project:instance1',
-            'NAME': 'my_db',
-            }
-        }
-else:
-    # Running in development, so use a local MySQL database.
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'USER': 'user',
-            'PASSWORD': 'pass',
-            'HOST': 'localhost',
-            'NAME': 'my_db',
-            }
-        }
-"""
+#import os
+#if (os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine') or
+#    os.getenv('SETTINGS_MODE') == 'prod'):
+#    # Running on production App Engine, so use a Google Cloud SQL database.
+#    DATABASES = {
+#        'default': {
+#            'ENGINE': 'google.appengine.ext.django.backends.rdbms',
+#            'INSTANCE': 'my_project:instance1',
+#            'NAME': 'my_db',
+#            }
+#        }
+#else:
+#    # Running in development, so use a local MySQL database.
+#    DATABASES = {
+#        'default': {
+#            'ENGINE': 'django.db.backends.sqlite3',
+##            'USER': 'root',
+##            'PASSWORD': '',
+##            'HOST': 'localhost',
+#            'NAME': 'my_db',
+#            }
+#        }
 
 
 
@@ -165,6 +162,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'appengine_sessions',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:

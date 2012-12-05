@@ -1,17 +1,18 @@
-import base64
-from datetime import datetime, timedelta
-import pickle
-import unittest
-
-from google.appengine.ext import testbed
-
-from appengine_sessions.backends.db import SessionStore as DatabaseSession
 from appengine_sessions.backends.cached_db import SessionStore as CacheDBSession
-from appengine_sessions.models import Session
+from appengine_sessions.backends.db import SessionStore as DatabaseSession
 from appengine_sessions.middleware import SessionMiddleware
+from appengine_sessions.models import Session
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.hashcompat import md5_constructor
+from django.utils import timezone
+from google.appengine.ext import testbed
+import base64
+import pickle
+import unittest
+
+
 
 
 class SessionTestsMixin(object):
@@ -186,7 +187,7 @@ class SessionTestsMixin(object):
     def test_custom_expiry_seconds(self):
         # Using seconds
         self.session.set_expiry(10)
-        delta = self.session.get_expiry_date() - datetime.now()
+        delta = self.session.get_expiry_date() - timezone.now()
         self.assertTrue(delta.seconds in (9, 10))
 
         age = self.session.get_expiry_age()
@@ -195,7 +196,7 @@ class SessionTestsMixin(object):
     def test_custom_expiry_timedelta(self):
         # Using timedelta
         self.session.set_expiry(timedelta(seconds=10))
-        delta = self.session.get_expiry_date() - datetime.now()
+        delta = self.session.get_expiry_date() - timezone.now()
         self.assertTrue(delta.seconds in (9, 10))
 
         age = self.session.get_expiry_age()
@@ -203,10 +204,10 @@ class SessionTestsMixin(object):
 
     def test_custom_expiry_datetime(self):
         # Using fixed datetime
-        self.session.set_expiry(datetime.now() + timedelta(seconds=10))
-        delta = self.session.get_expiry_date() - datetime.now()
+        now = timezone.now()
+        self.session.set_expiry(now + timedelta(seconds=10)) 
+        delta = self.session.get_expiry_date() - now
         self.assertTrue(delta.seconds in (9, 10))
-
         age = self.session.get_expiry_age()
         self.assertTrue(age in (9, 10))
 
@@ -253,18 +254,6 @@ class SessionTestsMixin(object):
         # Ensure we can decode what we encode
         data = {'a test key': 'a test value'}
         encoded = self.session.encode(data)
-        self.assertEqual(self.session.decode(encoded), data)
-
-    def test_decode_django12(self):
-        # Ensure we can decode values encoded using Django 1.2
-        # Hard code the Django 1.2 method here:
-        def encode(session_dict):
-            pickled = pickle.dumps(session_dict, pickle.HIGHEST_PROTOCOL)
-            pickled_md5 = md5_constructor(pickled + settings.SECRET_KEY).hexdigest()
-            return base64.encodestring(pickled + pickled_md5)
-
-        data = {'a test key': 'a test value'}
-        encoded = encode(data)
         self.assertEqual(self.session.decode(encoded), data)
 
 
