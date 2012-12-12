@@ -1,17 +1,20 @@
-import base64
+from appengine_sessions.backends import cached_db
+from appengine_sessions.backends.cached_db import SessionStore as CacheDBSession
+from appengine_sessions.backends.db import SessionStore as DatabaseSession
+from appengine_sessions.middleware import SessionMiddleware
+from appengine_sessions.models import Session
 from datetime import datetime, timedelta
+from django.conf import settings
+from django.core.cache import cache
+from django.http import HttpResponse
+from django.utils import timezone
+from django.utils.hashcompat import md5_constructor
+from google.appengine.ext import testbed
+import base64
 import pickle
 import unittest
 
-from google.appengine.ext import testbed
 
-from appengine_sessions.backends.db import SessionStore as DatabaseSession
-from appengine_sessions.backends.cached_db import SessionStore as CacheDBSession
-from appengine_sessions.models import Session
-from appengine_sessions.middleware import SessionMiddleware
-from django.conf import settings
-from django.http import HttpResponse
-from django.utils.hashcompat import md5_constructor
 
 
 class SessionTestsMixin(object):
@@ -186,7 +189,7 @@ class SessionTestsMixin(object):
     def test_custom_expiry_seconds(self):
         # Using seconds
         self.session.set_expiry(10)
-        delta = self.session.get_expiry_date() - datetime.now()
+        delta = self.session.get_expiry_date() - timezone.now()
         self.assertTrue(delta.seconds in (9, 10))
 
         age = self.session.get_expiry_age()
@@ -195,7 +198,7 @@ class SessionTestsMixin(object):
     def test_custom_expiry_timedelta(self):
         # Using timedelta
         self.session.set_expiry(timedelta(seconds=10))
-        delta = self.session.get_expiry_date() - datetime.now()
+        delta = self.session.get_expiry_date() - timezone.now()
         self.assertTrue(delta.seconds in (9, 10))
 
         age = self.session.get_expiry_age()
@@ -203,10 +206,10 @@ class SessionTestsMixin(object):
 
     def test_custom_expiry_datetime(self):
         # Using fixed datetime
-        self.session.set_expiry(datetime.now() + timedelta(seconds=10))
-        delta = self.session.get_expiry_date() - datetime.now()
+        now = timezone.now()
+        self.session.set_expiry(now + timedelta(seconds=10)) 
+        delta = self.session.get_expiry_date() - now
         self.assertTrue(delta.seconds in (9, 10))
-
         age = self.session.get_expiry_age()
         self.assertTrue(age in (9, 10))
 
@@ -255,18 +258,6 @@ class SessionTestsMixin(object):
         encoded = self.session.encode(data)
         self.assertEqual(self.session.decode(encoded), data)
 
-    def test_decode_django12(self):
-        # Ensure we can decode values encoded using Django 1.2
-        # Hard code the Django 1.2 method here:
-        def encode(session_dict):
-            pickled = pickle.dumps(session_dict, pickle.HIGHEST_PROTOCOL)
-            pickled_md5 = md5_constructor(pickled + settings.SECRET_KEY).hexdigest()
-            return base64.encodestring(pickled + pickled_md5)
-
-        data = {'a test key': 'a test value'}
-        encoded = encode(data)
-        self.assertEqual(self.session.decode(encoded), data)
-
 
 class DatabaseSessionTests(SessionTestsMixin, unittest.TestCase):
 
@@ -280,11 +271,11 @@ class DatabaseSessionTests(SessionTestsMixin, unittest.TestCase):
         self.session['x'] = 1
         self.session.save()
 
-        s = Session.get_by_key_name('session-%s' % self.session.session_key)
+        s = Session.get_by_key_name(self.session.session_key)
 
         self.assertEqual(s.get_decoded(), {'x': 1})
 
-    def test_sessionmanager_save(self):
+    def test_sessionmanager_save_creates_key(self):
         """
         Test SessionManager.save method
         """
@@ -292,14 +283,80 @@ class DatabaseSessionTests(SessionTestsMixin, unittest.TestCase):
         self.session['y'] = 1
         self.session.save()
 
-        s = Session.get_by_key_name('session-%s' % self.session.session_key)
+        # Test the session creates a key
+        self.assertTrue(self.session.session_key)
 
+    def test_sessionmanager_load(self):
+        """
+            Test calling the Load method creates a valid
+            session object with a Key
+        """
 
+        s = self.session.load()
+        
+        # Load creates a session key
+        self.assertTrue(self.session.session_key)
+        
+        # Session data is empty
+        self.assertEquals(s,{})
+        
+        self.session['z'] = 1
+        self.session.save()
+        
+        s = self.session.load()
+
+        # Loading Session data is now not empty
+        self.assertEquals(s,{'z':1})
+        
+        # Test the session object is in the datastore
+        s = Session.get_by_key_name(self.session.session_key)
+        self.assertEquals(s.session_key,self.session.session_key)
+        self.assertEquals(s.get_decoded(), {'z': 1})
+ 
+        
 class CacheDBSessionTests(SessionTestsMixin, unittest.TestCase):
 
     backend = CacheDBSession
+    
+    def test_sessionmanager_load(self):
+        """
+            Test calling the Load method creates a valid
+            session object with a Key and adds to the cache
+        """
 
-
+        s = self.session.load()
+        
+        # Load creates a session key
+        self.assertTrue(self.session.session_key)
+        
+        # Test the cache key is the same as session key with a prefix
+        self.assertEquals(self.session.cache_key,'%s%s' % (cached_db.KEY_PREFIX,self.session.session_key))
+        
+        # Test the session is the same in memcahce        
+        self.assertEquals(cache.get(self.session.cache_key),s)
+        
+        # Session data is empty
+        self.assertEquals(s,{})
+        
+    def test_sessionmanager_save(self):
+        """
+            Test calling the Save method creates a valid
+            session object with a Key and adds to the cache
+        """
+                
+        self.session['z'] = 1
+        self.session.save()
+        
+        # Save creates a session key
+        self.assertTrue(self.session.session_key)
+        
+        # Test the cache key is the same as session key with a prefix
+        self.assertEquals(self.session.cache_key,'%s%s' % (cached_db.KEY_PREFIX,self.session.session_key))
+        
+        # Test the session is the same in memcahce        
+        self.assertEquals(cache.get(self.session.cache_key),{'z':1})
+        
+        
 class FakeRequest(object):
     def __init__(self):
         self.COOKIES = {}

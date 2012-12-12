@@ -25,7 +25,7 @@ class SessionStore(DBStore):
         super(SessionStore, self).__init__(session_key)
 
     def load(self):
-        s = Session.get_by_key_name('session-%s' % self.session_key)
+        s = Session.get_by_key_name(self._get_or_create_session_key())
 
         if s:
             if s.expire_date > datetime.datetime.now():
@@ -37,15 +37,18 @@ class SessionStore(DBStore):
         return {}
 
     def exists(self, session_key):
-        s = Session.get_by_key_name('session-%s' % session_key)
-        return s is not None
+        # If session key is None then False
+        if session_key:
+            s = Session.get_by_key_name(session_key)
+            return s is not None
+        return False
 
     def save(self, must_create=False):
         """Create and save a Session object using db.run_in_transaction, with
-        key_name = 'session-%s' % session_key, raising CreateError if
+        key_name = session_key, raising CreateError if
         unsuccessful.
         """
-        s = Session.get_by_key_name('session-%s' % self.session_key)
+        s = Session.get_by_key_name(self._get_or_create_session_key())
         if must_create:
             if s:
                 raise CreateError()
@@ -54,8 +57,8 @@ class SessionStore(DBStore):
 
         def txn():
             s = Session(
-                key_name='session-%s' % self.session_key,
-                session_key='session-%s' % self.session_key,
+                key_name=self.session_key,
+                session_key=self.session_key,
                 session_data=self.encode(session_data),
                 expire_date=self.get_expiry_date()
             )
@@ -75,9 +78,9 @@ class SessionStore(DBStore):
         if session_key is None:
             if self._session_key is None:
                 return
-            session_key = self._session_key
+            session_key = self._get_or_create_session_key()
 
-        db.delete(db.Key.from_path('Session', 'session-%s' % session_key))
+        db.delete(db.Key.from_path('Session', session_key))
 
 
 # Again, circular import fix

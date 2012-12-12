@@ -8,7 +8,7 @@ class HelloWorld(TemplateView):
     template_name = "hello-world.html"
     
     def get_context_data(self, **kwargs):
-        context = super(HelloWorld, self).get_context_data(**kwargs)
+        context = super(HelloWorld, self).get_context_data(**kwargs)        
         context['message'] = 'Hooray! Everything seems to work...'
         return context
 
