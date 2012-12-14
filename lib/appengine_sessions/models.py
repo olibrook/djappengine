@@ -1,10 +1,10 @@
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 
-class Session(db.Model):
-    session_key = db.StringProperty()
-    session_data = db.TextProperty()
-    expire_date = db.DateTimeProperty()
+class Session(ndb.Model):
+    session_key = ndb.StringProperty()
+    session_data = ndb.TextProperty()
+    expire_date = ndb.DateTimeProperty()
 
     def get_decoded(self):
         return SessionStore().decode(self.session_data)

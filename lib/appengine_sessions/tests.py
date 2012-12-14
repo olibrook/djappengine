@@ -6,15 +6,16 @@ from appengine_sessions.models import Session
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.cache import cache
+from django.core.cache.backends.base import CacheKeyWarning
 from django.http import HttpResponse
+from django.test.utils import override_settings
 from django.utils import timezone
-from django.utils.hashcompat import md5_constructor
-from google.appengine.ext import testbed
-import base64
-import pickle
-import unittest
+from google.appengine.ext import testbed, ndb
+from unittest import TestCase
 
 
+# Use normal unittest.TestCase as Django TestCase requires a Database
+# These tests are using the stubbed appengine datastore 
 
 
 class SessionTestsMixin(object):
@@ -30,8 +31,11 @@ class SessionTestsMixin(object):
         self.testbed.init_datastore_v3_stub()
         self.testbed.init_memcache_stub()
         self.session = self.backend()
-        for s in Session.all():
+        for s in Session.query().fetch():
             s.delete()
+        
+        # Make sure the default Use Timezone setting is False
+        settings.USE_TZ=False
 
     def tearDown(self):
         # NB: be careful to delete any sessions created; stale sessions fill up
@@ -140,6 +144,7 @@ class SessionTestsMixin(object):
         self.assertTrue(self.session.exists(self.session.session_key))
 
     def test_delete(self):
+        self.session.save()
         self.session.delete(self.session.session_key)
         self.assertFalse(self.session.exists(self.session.session_key))
 
@@ -167,7 +172,10 @@ class SessionTestsMixin(object):
         # removed the key) results in a new key being generated.
         try:
             session = self.backend('1')
-            session.save()
+            try:
+                session.save()
+            except AttributeError:
+                self.fail("The session object did not save properly.  Middleware may be saving cache items without namespaces.")
             self.assertNotEqual(session.session_key, '1')
             self.assertEqual(session.get('cat'), None)
             session.delete()
@@ -175,6 +183,11 @@ class SessionTestsMixin(object):
             # Some backends leave a stale cache entry for the invalid
             # session key; make sure that entry is manually deleted
             session.delete('1')
+
+    def test_session_key_is_read_only(self):
+        def set_session_key(session):
+            session.session_key = session._get_new_session_key()
+        self.assertRaises(AttributeError, set_session_key, self.session)
 
     # Custom session expiry
     def test_default_expiry(self):
@@ -189,7 +202,7 @@ class SessionTestsMixin(object):
     def test_custom_expiry_seconds(self):
         # Using seconds
         self.session.set_expiry(10)
-        delta = self.session.get_expiry_date() - timezone.now()
+        delta = self.session.get_expiry_date() - datetime.utcnow()
         self.assertTrue(delta.seconds in (9, 10))
 
         age = self.session.get_expiry_age()
@@ -198,7 +211,7 @@ class SessionTestsMixin(object):
     def test_custom_expiry_timedelta(self):
         # Using timedelta
         self.session.set_expiry(timedelta(seconds=10))
-        delta = self.session.get_expiry_date() - timezone.now()
+        delta = self.session.get_expiry_date() - datetime.utcnow()
         self.assertTrue(delta.seconds in (9, 10))
 
         age = self.session.get_expiry_age()
@@ -206,10 +219,10 @@ class SessionTestsMixin(object):
 
     def test_custom_expiry_datetime(self):
         # Using fixed datetime
-        now = timezone.now()
-        self.session.set_expiry(now + timedelta(seconds=10)) 
-        delta = self.session.get_expiry_date() - now
+        self.session.set_expiry(datetime.utcnow() + timedelta(seconds=10))
+        delta = self.session.get_expiry_date() - datetime.utcnow()
         self.assertTrue(delta.seconds in (9, 10))
+
         age = self.session.get_expiry_age()
         self.assertTrue(age in (9, 10))
 
@@ -222,35 +235,25 @@ class SessionTestsMixin(object):
     def test_get_expire_at_browser_close(self):
         # Tests get_expire_at_browser_close with different settings and different
         # set_expiry calls
-        try:
-            try:
-                original_expire_at_browser_close = settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
-                settings.SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+        with override_settings(SESSION_EXPIRE_AT_BROWSER_CLOSE=False):
+            self.session.set_expiry(10)
+            self.assertFalse(self.session.get_expire_at_browser_close())
 
-                self.session.set_expiry(10)
-                self.assertFalse(self.session.get_expire_at_browser_close())
+            self.session.set_expiry(0)
+            self.assertTrue(self.session.get_expire_at_browser_close())
 
-                self.session.set_expiry(0)
-                self.assertTrue(self.session.get_expire_at_browser_close())
+            self.session.set_expiry(None)
+            self.assertFalse(self.session.get_expire_at_browser_close())
 
-                self.session.set_expiry(None)
-                self.assertFalse(self.session.get_expire_at_browser_close())
+        with override_settings(SESSION_EXPIRE_AT_BROWSER_CLOSE=True):
+            self.session.set_expiry(10)
+            self.assertFalse(self.session.get_expire_at_browser_close())
 
-                settings.SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+            self.session.set_expiry(0)
+            self.assertTrue(self.session.get_expire_at_browser_close())
 
-                self.session.set_expiry(10)
-                self.assertFalse(self.session.get_expire_at_browser_close())
-
-                self.session.set_expiry(0)
-                self.assertTrue(self.session.get_expire_at_browser_close())
-
-                self.session.set_expiry(None)
-                self.assertTrue(self.session.get_expire_at_browser_close())
-
-            except:
-                raise
-        finally:
-            settings.SESSION_EXPIRE_AT_BROWSER_CLOSE = original_expire_at_browser_close
+            self.session.set_expiry(None)
+            self.assertTrue(self.session.get_expire_at_browser_close())
 
     def test_decode(self):
         # Ensure we can decode what we encode
@@ -259,10 +262,10 @@ class SessionTestsMixin(object):
         self.assertEqual(self.session.decode(encoded), data)
 
 
-class DatabaseSessionTests(SessionTestsMixin, unittest.TestCase):
+class DatabaseSessionTests(SessionTestsMixin, TestCase):
 
     backend = DatabaseSession
-
+   
     def test_session_get_decoded(self):
         """
         Test we can use Session.get_decoded to retrieve data stored
@@ -271,10 +274,30 @@ class DatabaseSessionTests(SessionTestsMixin, unittest.TestCase):
         self.session['x'] = 1
         self.session.save()
 
-        s = Session.get_by_key_name(self.session.session_key)
+        ndb_session_key = ndb.Key(Session,self.session.session_key)
+        s = ndb_session_key.get()
+        #Session.get_by_key_name(self.session.session_key)
 
         self.assertEqual(s.get_decoded(), {'x': 1})
+    
+    def test_sessionmanager_save(self):
+        """
+        Test SessionManager.save method
+        """
+        # Create a session
+        self.session['y'] = 1
+        self.session.save()
 
+        s = Session.query(Session.session_key==self.session.session_key).get()
+
+        # Change it
+        self.session['y'] = 2
+        self.session.save()
+        
+        # Clear cache, so that it will be retrieved from DB
+        del self.session._session_cache
+        self.assertEqual(self.session['y'], 2)
+        
     def test_sessionmanager_save_creates_key(self):
         """
         Test SessionManager.save method
@@ -288,8 +311,8 @@ class DatabaseSessionTests(SessionTestsMixin, unittest.TestCase):
 
     def test_sessionmanager_load(self):
         """
-            Test calling the Load method creates a valid
-            session object with a Key
+        Test calling the Load method creates a valid
+        session object with a Key
         """
 
         s = self.session.load()
@@ -309,15 +332,55 @@ class DatabaseSessionTests(SessionTestsMixin, unittest.TestCase):
         self.assertEquals(s,{'z':1})
         
         # Test the session object is in the datastore
-        s = Session.get_by_key_name(self.session.session_key)
+        ndb_session_key = ndb.Key(Session,self.session.session_key)
+        s = ndb_session_key.get()
         self.assertEquals(s.session_key,self.session.session_key)
         self.assertEquals(s.get_decoded(), {'z': 1})
- 
         
-class CacheDBSessionTests(SessionTestsMixin, unittest.TestCase):
+    def test_session_expiry_date(self):
+        """ Test the expiry date is set correct """
+        
+        self.session.load()
+        
+        ndb_session_key = ndb.Key(Session,self.session.session_key)
+        s = ndb_session_key.get()
+        
+        now = datetime.utcnow()
+        timedelta = s.expire_date - now
+
+        self.assertTrue((settings.SESSION_COOKIE_AGE - timedelta.total_seconds()) < 1)
+        
+    def test_expired_session(self):
+        """ Test a session with an expiry date that has the same creation date
+            gets recreated as a new session when re-loaded """
+            
+        old_cookie_age = settings.SESSION_COOKIE_AGE
+        
+        settings.SESSION_COOKIE_AGE=0    
+    
+        self.session.load()
+        
+        old_session_key = self.session._session_key
+    
+        self.session.load()
+
+        self.assertNotEquals(self.session._session_key,old_session_key)
+        settings.SESSION_COOKIE_AGE=old_cookie_age
+        
+                
+class DatabaseSessionWithTimeZoneTests(DatabaseSessionTests):
+    """ Test the database session tests with USE TZ set to True to make 
+        they all still work when this setting is set """
+    
+    def setUp(self):
+        super(DatabaseSessionWithTimeZoneTests,self).setUp()
+        settings.USE_TZ=True
+
+
+class CacheDBSessionTests(SessionTestsMixin, TestCase):
 
     backend = CacheDBSession
-    
+
     def test_sessionmanager_load(self):
         """
             Test calling the Load method creates a valid
@@ -343,7 +406,6 @@ class CacheDBSessionTests(SessionTestsMixin, unittest.TestCase):
             Test calling the Save method creates a valid
             session object with a Key and adds to the cache
         """
-                
         self.session['z'] = 1
         self.session.save()
         
@@ -356,12 +418,22 @@ class CacheDBSessionTests(SessionTestsMixin, unittest.TestCase):
         # Test the session is the same in memcahce        
         self.assertEquals(cache.get(self.session.cache_key),{'z':1})
         
+
+class CacheDBSessionWithTimeZoneTests(CacheDBSessionTests):
+    """ Test the cache DB session tests with USE TZ set to True to make 
+        they all still work when this setting is set """
+    
+    
+    def setUp(self):
+        super(CacheDBSessionWithTimeZoneTests,self).setUp()
+        settings.USE_TZ=True
+
         
 class FakeRequest(object):
     def __init__(self):
         self.COOKIES = {}
 
-class SessionMiddlewareTests(unittest.TestCase):
+class SessionMiddlewareTests(TestCase):
     def setUp(self):
         self.testbed = testbed.Testbed()
         self.testbed.activate()
