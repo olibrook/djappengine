@@ -275,10 +275,9 @@ class DatabaseSessionTests(SessionTestsMixin, TestCase):
         self.session.save()
 
         ndb_session_key = ndb.Key(Session,self.session.session_key)
-        s = ndb_session_key.get()
-        #Session.get_by_key_name(self.session.session_key)
-
-        self.assertEqual(s.get_decoded(), {'x': 1})
+        ndb_s = ndb_session_key.get()
+       
+        self.assertEqual(DatabaseSession().decode(ndb_s.session_data), {'x': 1})
     
     def test_sessionmanager_save(self):
         """
@@ -333,9 +332,10 @@ class DatabaseSessionTests(SessionTestsMixin, TestCase):
         
         # Test the session object is in the datastore
         ndb_session_key = ndb.Key(Session,self.session.session_key)
-        s = ndb_session_key.get()
-        self.assertEquals(s.session_key,self.session.session_key)
-        self.assertEquals(s.get_decoded(), {'z': 1})
+        ndb_s = ndb_session_key.get()
+        
+        self.assertEquals(ndb_s.session_key,self.session.session_key)
+        self.assertEquals(DatabaseSession().decode(ndb_s.session_data), {'z': 1})
         
     def test_session_expiry_date(self):
         """ Test the expiry date is set correct """

@@ -9,7 +9,8 @@ class HelloWorld(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super(HelloWorld, self).get_context_data(**kwargs)        
-        context['message'] = 'Hooray! Everything seems to work...'
+        self.request.session['test'] = 'Session is working'
+        context['message'] = 'Hooray! Everything seems to work... - %s' % self.request.session['test']
         return context
 
 
