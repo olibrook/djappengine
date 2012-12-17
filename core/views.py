@@ -13,13 +13,8 @@ class HelloWorld(TemplateView):
         context['message'] = 'Hooray! Everything seems to work... - %s' % self.request.session['test']
         return context
 
-
 def exception_test(request):
     logging.debug('Debug log')
     logging.warn('Warn log')
     logging.error('Error log')
     raise Exception()
-    
-
-
-    
