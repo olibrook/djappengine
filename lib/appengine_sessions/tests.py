@@ -1,6 +1,7 @@
 from appengine_sessions.backends import cached_db
 from appengine_sessions.backends.cached_db import SessionStore as CacheDBSession
 from appengine_sessions.backends.db import SessionStore as DatabaseSession
+from appengine_sessions.mapper import DeleteMapper
 from appengine_sessions.middleware import SessionMiddleware
 from appengine_sessions.models import Session
 from datetime import datetime, timedelta
@@ -8,15 +9,15 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.cache.backends.base import CacheKeyWarning
 from django.http import HttpResponse
+from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils import timezone
 from google.appengine.ext import testbed, ndb
+from subprocess import call
 from unittest import TestCase
-
-
+import mock
 # Use normal unittest.TestCase as Django TestCase requires a Database
 # These tests are using the stubbed appengine datastore 
-
 
 class SessionTestsMixin(object):
     # This does not inherit from TestCase to avoid any tests being run with this
@@ -459,3 +460,93 @@ class SessionMiddlewareTests(TestCase):
         # Handle the response through the middleware
         response = middleware.process_response(request, response)
         self.assertTrue(response.cookies[settings.SESSION_COOKIE_NAME]['secure'])
+        
+        
+class SessionCleanUpTest(TestCase):
+    
+    def setUp(self):
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.testbed.init_datastore_v3_stub()
+        self.testbed.init_memcache_stub()
+        self.testbed.init_taskqueue_stub(enable=True)
+        
+    def tearDown(self):
+        self.testbed.deactivate()
+         
+    def test_mapper(self):
+        """
+            Test a session gets deleted and another
+            one has been put on as a task to be deleted
+        """
+        for i in range(0,2):
+            s = Session(session_key='%s' % i, expire_date=datetime.utcnow())
+            s.put()
+
+        mapper = DeleteMapper(Session, filters = {'lt': ('expire_date', datetime.utcnow())}, deferred_batch_size=1)
+        mapper.transaction()
+        
+        taskqueue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
+        
+        self.assertEquals(Session.query().count(), 1)
+        
+        tasks=taskqueue.GetTasks(mapper.queue)
+        self.assertEquals(len(tasks),1)
+
+    def test_mapper_session_data(self):
+        """
+            Test the mapper only deletes the expired session and
+            doesn't create a new task on queue
+        """
+        
+        s1 = Session(session_key='1', expire_date=datetime.utcnow() + timedelta(seconds=3600))
+        s1.put()
+        s2 = Session(session_key='2', expire_date=datetime.utcnow())
+        s2.put()
+        
+        mapper = DeleteMapper(Session, filters = {'lt': ('expire_date', datetime.utcnow())}, deferred_batch_size=1)
+        mapper.transaction()
+        taskqueue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
+        
+        tasks=taskqueue.GetTasks(mapper.queue)
+        self.assertEquals(len(tasks),0)
+        
+        self.assertEquals(Session.query().count(), 1)
+        self.assertEquals(Session.query().get().session_key,'1')
+
+    def test_view(self):
+        """
+            Test the cron view sets a deferred task
+            onto the default task queue
+        """
+        
+        c = Client()
+        response = c.get('/cron/session-clean-up/')
+        
+        taskqueue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
+        self.assertEquals(response.status_code,200)
+        self.assertEquals(len(taskqueue.GetTasks('default')),1)
+        
+    def test_mapper_batch_size(self):
+        """
+            Test the amount of sessions gets deleted is
+            the same as the deferred_batch_size
+        """
+        for i in range(0,20):
+            s = Session(session_key='%s' % i, expire_date=datetime.utcnow())
+            s.put()
+
+        mapper = DeleteMapper(Session, filters = {'lt': ('expire_date', datetime.utcnow())}, deferred_batch_size=10)
+        mapper.transaction()
+        
+        taskqueue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
+        
+        # Should be 10 left
+        self.assertEquals(Session.query().count(), 10)
+        
+        mapper.transaction()
+        
+        # Should be 0 session left
+        self.assertEquals(Session.query().count(), 0)
+        
+        

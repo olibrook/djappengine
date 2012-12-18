@@ -1,0 +1,4 @@
+cron:
+- description: Cron to clear sessions
+  url: /cron/session-clean-up/
+  schedule: every 24 hours

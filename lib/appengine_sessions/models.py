@@ -5,14 +5,12 @@ class Session(ndb.Model):
     session_data = ndb.TextProperty()
     expire_date = ndb.DateTimeProperty()
 
-# @TODO sort out the circular import. 
 # The code below is causing a circular import error when running in appengine
-# Check the django code and this metho is only used in the tests.
+# Checked the django code and this method is only used in the tests.
 # Have changed the appengine_sessions tests to not use it.
 # Will cause the actual django session tests to fail if ran using the appengine_sessions cache_db session engine
 #    def get_decoded(self):
 #        return SessionStore().decode(self.session_data)
-
 
 # At the bottom to win against circular imports
 #from appengine_sessions.backends.db import SessionStore
