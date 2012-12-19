@@ -20,11 +20,3 @@ class SessionCleanUpCron(View):
         mapper.start()
         
         return HttpResponse('Session cleaner mapper started')
-
-class GenerateSession(View):
-    
-    def get(self, request, *args, **kwargs):
-        ss = SessionStore()
-        for i in range(0,100):
-            session = Session(session_key=ss._get_new_session_key(),expire_date=datetime.utcnow())
-            session.put()
