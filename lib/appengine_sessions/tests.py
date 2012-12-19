@@ -15,7 +15,7 @@ from django.utils import timezone
 from google.appengine.ext import testbed, ndb
 from subprocess import call
 from unittest import TestCase
-import mock
+
 # Use normal unittest.TestCase as Django TestCase requires a Database
 # These tests are using the stubbed appengine datastore 
 
