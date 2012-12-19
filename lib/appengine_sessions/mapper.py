@@ -40,8 +40,6 @@ class QueryMapper(object):
         """ Specialise this no-op. """
         logging.info('processing key %s' % str(key))
  
-    # This cannot be transactional if you have a query with no ancestor
-    # @ndb.transactional
     def transaction(self):
         # Build up the query in iteration, to keep deferred happy
         query = self.model.query(ancestor=self.ancestor)
@@ -55,7 +53,6 @@ class QueryMapper(object):
 
         # Attempt to process an entire batch
         if query.count(self.deferred_batch_size) > 0:
-            # todo: fetch_page_async
             keys, cursor, more = query.fetch_page(
                 self.deferred_batch_size, keys_only=True, 
                 start_cursor=self.cursor)
@@ -93,8 +90,12 @@ class QueryMapper(object):
 class DeleteMapper(QueryMapper):
     """ Delete all entities mapped. """
     
-    @ndb.transactional
     def process_key(self, key):
         # Deleting key
         logging.info('DeleteMapper deleted %s' % str(key))
         key.delete()
+
+
+
+
+        

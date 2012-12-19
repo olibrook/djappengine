@@ -13,7 +13,8 @@ class SessionCleanUpCron(View):
     
     def get(self, request, *args, **kwargs):
         
-        mapper = DeleteMapper(Session,filters={'lt': ('expire_date', datetime.utcnow())})
+        mapper = DeleteMapper(Session, filters={
+            'lt': ('expire_date', datetime.utcnow())})
         mapper.start()
         
         return HttpResponse('Session cleaner mapper started')
