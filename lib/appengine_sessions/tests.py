@@ -488,9 +488,12 @@ class SessionCleanUpTest(TestCase):
         
         taskqueue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
         
+        # One expired session left
         self.assertEquals(Session.query().count(), 1)
         
         tasks=taskqueue.GetTasks(mapper.queue)
+                                 
+        # Another deferred task in the queue to remove the next expired session
         self.assertEquals(len(tasks),1)
 
     def test_mapper_session_data(self):
@@ -509,8 +512,12 @@ class SessionCleanUpTest(TestCase):
         taskqueue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
         
         tasks=taskqueue.GetTasks(mapper.queue)
+        
+        # Should be no task in the queue as
+        # no more sessions to delete.
         self.assertEquals(len(tasks),0)
         
+        # Should be 1 valid session left
         self.assertEquals(Session.query().count(), 1)
         self.assertEquals(Session.query().get().session_key,'1')
 
