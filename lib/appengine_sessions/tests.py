@@ -528,7 +528,7 @@ class SessionCleanUpTest(TestCase):
         """
         
         c = Client()
-        response = c.get('/cron/session-clean-up/')
+        response = c.get('/appengine_sessions/clean-up/')
         
         taskqueue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
         self.assertEquals(response.status_code,200)
