@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Google Appengine Python SDK 1.7.3+
+Google Appengine Python SDK 1.7.5+
 
 ## Getting started
 
