@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-dev_appserver.py . -d --datastore_path=tmp/data
+dev_appserver.py . --log_level=debug --datastore_path=tmp/data
