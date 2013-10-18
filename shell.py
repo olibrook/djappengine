@@ -4,6 +4,7 @@
 dev_appserver.py . --use_sqlite --datastore_path=tmp/data """
 
 import os
+import logging
 from lib.environ import DATASTORE_PATH, setup_environ
 
 setup_environ()
@@ -18,13 +19,9 @@ app_id = os.environ['APPLICATION_ID']
 kwargs = dev_appserver_main.DEFAULT_ARGS.copy()
 
 kwargs.update({
-        'use_sqlite': True,
-        'datastore_path': DATASTORE_PATH
-        # todo: blobstore, prospective search
-        })
+    'use_sqlite': True,
+    'datastore_path': DATASTORE_PATH
+    # todo: blobstore, prospective search
+})
 dev_appserver.SetupStubs(app_id, **kwargs)
-print DATASTORE_PATH
-
-
-
-
+logging.info('DataStore Path: %s' % DATASTORE_PATH)

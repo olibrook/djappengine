@@ -5,15 +5,16 @@ from appengine_sessions.backends.db import SessionStore as DBStore
 
 KEY_PREFIX = "appengine_sessions.cached_db"
 
-class SessionStore(DBStore):
 
+class SessionStore(DBStore):
     def __init__(self, session_key=None):
         super(SessionStore, self).__init__(session_key)
 
     @property
     def cache_key(self):
-        """ Create a unique key for cache using the actual session key with a PREFIX
-            Calls _get_or_create_session_key to ensure session key is not None
+        """
+        Create a unique key for cache using the actual session key with a PREFIX
+        Calls _get_or_create_session_key to ensure session key is not None
         """
         return KEY_PREFIX + self._get_or_create_session_key()
 
@@ -23,7 +24,7 @@ class SessionStore(DBStore):
             data = super(SessionStore, self).load()
             cache.set(self.cache_key, data, settings.SESSION_COOKIE_AGE)
         return data
-    
+
     def exists(self, session_key):
         return super(SessionStore, self).exists(session_key)
 
