@@ -1,5 +1,5 @@
-application: djappeng1ne
-version: 2
+application: djappeng1ne-beta
+version: 1
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -15,7 +15,6 @@ inbound_services:
 - warmup
 
 handlers:
-
 - url: /static
   static_dir: core/static
   expiration: '1m'

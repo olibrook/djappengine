@@ -10,10 +10,11 @@ class NdbTestCase(unittest.TestCase):
         self.testbed.activate()
         self.testbed.init_datastore_v3_stub()
         self.testbed.init_memcache_stub()
+        super(NdbTestCase, self).setUp()
 
-
-    def teatDown(self):
+    def tearDown(self):
         self.testbed.deactivate()
+        super(NdbTestCase, self).tearDown()
 
 
 if __name__ == '__main__':

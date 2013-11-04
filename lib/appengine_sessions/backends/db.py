@@ -1,4 +1,5 @@
-""" Fix Django's 'write-through' (cache and datastore storage) session
+"""
+Fix Django's 'write-through' (cache and datastore storage) session
 backend to work with Appengine's datastore, along with whatever cache
 backend is in settings.
 
@@ -18,24 +19,25 @@ from datetime import datetime, timedelta
 
 
 class SessionStore(DBStore):
-    """Implements a session store using Appengine's datastore API instead
+    """
+    Implements a session store using Appengine's datastore API instead
     of Django's abstracted DB API (since we no longer have nonrel -- just
     vanilla Django)
     """
     def __init__(self, session_key=None):
         super(SessionStore, self).__init__(session_key)
 
-    def get_ndb_session_key(self,session_key=None):
+    def get_ndb_session_key(self, session_key=None):
         return ndb.Key(Session, session_key and session_key or self._get_or_create_session_key())
 
-
     """
-      Session Date related methods overridden to handle the NDB DateTimeProperty
-          get_expiry_age
-          get_expiry_date
-          set_expiry
-      
-      Making sure session dates always use UTC datetimes with no tzinfo
+    Session Date related methods overridden to handle the NDB DateTimeProperty
+
+        get_expiry_age
+        get_expiry_date
+        set_expiry
+
+    Making sure session dates always use UTC datetimes with no tzinfo
     """
 
     def get_expiry_age(self):
@@ -49,10 +51,10 @@ class SessionStore(DBStore):
         return delta.days * 86400 + delta.seconds
 
     def get_expiry_date(self):
-        """Get session the expiry date (as a datetime object).
-
-            Overridden to make sure that UTC time is used for NDB datetime
-            properties """
+        """
+        Get session the expiry date (as a datetime object).
+        Overridden to make sure that UTC time is used for NDB datetime properties
+        """
         expiry = self.get('_session_expiry')
         if isinstance(expiry, datetime):
             return expiry
@@ -89,7 +91,7 @@ class SessionStore(DBStore):
     def load(self):
         s = self.get_ndb_session_key().get()
 
-        if s:  
+        if s:
             # Make sure you compare UTC datetime now for NDB.
             if s.expire_date > datetime.utcnow():
                 try:
@@ -102,17 +104,18 @@ class SessionStore(DBStore):
     def exists(self, session_key):
         # If session key is None then False
         if session_key:
-            ndb_session_key = ndb.Key(Session,session_key)
+            ndb_session_key = ndb.Key(Session, session_key)
             s = ndb_session_key.get()
             return s is not None
         return False
 
     def save(self, must_create=False):
-        """Create and save a Session object using db.run_in_transaction, with
+        """
+        Create and save a Session object using db.run_in_transaction, with
         key_name = session_key, raising CreateError if
         unsuccessful.
         """
-       
+
         if must_create:
             s = self.get_ndb_session_key().get()
             if s:
@@ -121,6 +124,7 @@ class SessionStore(DBStore):
         session_data = self._get_session(no_load=must_create)
         #ed = self.get_expiry_date()
         #print datetime.datetime.utcoffset(ed)
+
         def txn():
             s = Session(
                 id=self._get_or_create_session_key(),
