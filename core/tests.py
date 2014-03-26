@@ -1,20 +1,22 @@
 import unittest
 
-from google.appengine.api import memcache
-from google.appengine.ext import db
-from google.appengine.ext import testbed
+from google.appengine.ext import ndb
 
-from ndbtestcase import NdbTestCase
+from ndbtestcase import AppEngineTestCase
 
 
-class ATestCase(NdbTestCase):
+class Thing(ndb.Model):
+    stuff = ndb.StringProperty()
 
-    def setUp(self):
-        self.param = 1
-        super(ATestCase, self).setUp()
 
-    def test_param(self):
-        self.assertEqual(self.param, 1)
+class ATestCase(AppEngineTestCase):
+    """Example App Engine testcase"""
+
+    def test_thing_exists(self):
+        self.thing = Thing(stuff="Hi")
+        self.thing.put()
+        self.assertEquals(Thing.query().count(), 1)
+
 
 if __name__ == '__main__':
     unittest.main()
