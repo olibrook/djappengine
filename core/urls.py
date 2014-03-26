@@ -1,14 +1,14 @@
-from django.conf.urls import *
 from django.conf import settings
-from core import views
+from django.conf.urls.defaults import url, patterns
 
-urlpatterns = patterns('',
-    url(r'^$', views.hello_world, name='hello-world'),
+
+urlpatterns = patterns('core.views',
+    url(r'^$', 'hello_world', {}, name='hello-world'),
 )
 
+
 if settings.DEBUG:
-    urlpatterns += patterns(
-        '',
-        url(r'^500/$', 'django.views.generic.simple.direct_to_template', {'template': '500.html'}),
-        url(r'^404/$', 'django.views.generic.simple.direct_to_template', {'template': '404.html'}),
+    urlpatterns += patterns('django.views.generic.simple',
+        url(r'^500/$', 'direct_to_template', {'template': '500.html'}),
+        url(r'^404/$', 'direct_to_template', {'template': '404.html'}),
     )
