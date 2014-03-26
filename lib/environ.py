@@ -49,7 +49,6 @@ def setup_environ():
             except ValueError, e:
                 if library.name == 'django' and library.version == '1.4':
                     # Work around an SDK issue
-                    logging.warn('django 1.4 not recognised by dist, fixing python path')
                     sys.path.insert(0, os.path.join(sdk_path, 'lib', 'django-1.4'))
                 else:
                     logging.warn('Unsupported library:\n%s\n' % e)
