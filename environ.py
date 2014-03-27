@@ -95,8 +95,8 @@ def setup_appengine_env(**stub_kwargs):
             sys.path = extra_paths + sys.path
 
 
-def setup_environ(project_name="djappengine", **stub_kwargs):
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{}.settings".format(project_name))
+def setup_environ(**stub_kwargs):
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{{ project_name }}.settings")
 
     add_lib_to_path()
     setup_appengine_env(**stub_kwargs)

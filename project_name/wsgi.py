@@ -6,7 +6,7 @@ from environ import add_lib_to_path
 
 add_lib_to_path()
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'djappengine.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = '{{ project_name }}.settings'
 
 os.environ['APPENGINE_PRODUCTION'] = \
     os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine') or\

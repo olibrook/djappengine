@@ -5,7 +5,7 @@ from django.conf.urls import include, patterns, url
 urlpatterns = patterns('',
     (r'^appengine_sessions/', include('appengine_sessions.urls')),
 
-    (r'', include('djappengine.core.urls')),
+    (r'', include('{{ project_name }}.core.urls')),
 )
 
 

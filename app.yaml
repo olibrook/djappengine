@@ -1,4 +1,4 @@
-application: djappeng1ne-beta
+application: {{ project_name }}
 version: 1
 runtime: python27
 api_version: 1
@@ -16,19 +16,19 @@ inbound_services:
 
 handlers:
 - url: /static
-  static_dir: djappengine/static
+  static_dir: {{ project_name }}/static
   expiration: '1m'
 
 - url: /favicon.ico
-  static_files: djappengine/static/root/favicon.ico
-  upload: djappengine/static/root/favicon.ico
+  static_files: {{ project_name }}/static/root/favicon.ico
+  upload: {{ project_name }}/static/root/favicon.ico
 
 - url: /appengine_sessions/clean-up/
-  script: djappengine.wsgi.app
+  script: {{ project_name }}.wsgi.app
   login: admin
 
 - url: /.*
-  script: djappengine.wsgi.app
+  script: {{ project_name }}.wsgi.app
 
 skip_files:
 - ^(.*/)?app.yaml

@@ -153,7 +153,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-ROOT_URLCONF = 'djappengine.urls'
+ROOT_URLCONF = '{{ project_name }}.urls'
 
 TEMPLATE_DIRS = (
     os.path.join(PROJDIR, "templates"),
@@ -169,7 +169,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'djappengine.core',
+    '{{ project_name }}.core',
     'appengine_sessions',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
@@ -207,5 +207,5 @@ LOGGING = {
 }
 
 ALLOWED_HOSTS = [
-    'djappeng1ne-beta.appspot.com'
+    '{{ project_name }}.appspot.com',
 ]

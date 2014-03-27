@@ -20,7 +20,7 @@ if 'shell' in sys.argv:
     subprocess.call('./shell.py')
 
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djappengine.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{{ project_name }}.settings")
 
     from django.core.management import execute_from_command_line
 
