@@ -1,8 +1,8 @@
-# A streamlined Django 1.4 and App Engine integration.
+# A streamlined Django 1.5 and App Engine integration.
 
 ## Requirements
 
-Google Appengine Python SDK 1.7.5+
+Google Appengine Python SDK 1.8.9+. Older versions probably still work, though.
 
 ## Getting started
 
@@ -41,7 +41,7 @@ djappengine uses a custom test runner that doesn't try to use a database. This i
 [App Engine's models](https://developers.google.com/appengine/docs/python/datastore/datamodeling), and not with Django's ORM. If you're using
 CloudSQL, comment out the [TEST_RUNNER](https://github.com/potatolondon/djappengine/blob/master/settings.py#L29) line in `settings.py`.
 
-[core/tests.py](https://github.com/potatolondon/djappengine/blob/master/core/tests.py) is an example test that sets App Engine's 
+[djappengine/core/tests.py](https://github.com/potatolondon/djappengine/blob/django-1.5/djappengine/core/tests.py) is an example test that sets App Engine's 
 [testbed](https://developers.google.com/appengine/docs/python/tools/localunittesting).
 
 ## So what's going on?
@@ -51,24 +51,28 @@ CloudSQL, comment out the [TEST_RUNNER](https://github.com/potatolondon/djappeng
 - Sets up static resources
 - Points all other paths to the WSGI app
 
-### main.py
+### manage.py
+
+- Uses path-fixing mechanisms in order for tests to run properly
+
+### environ.py
+
+- Uses various internal SDK functions to set up the system environment in such a way that things will run in the context of Appengine's service stubs
+
+### djappengine/wsgi.py
 
 - Sets the `DJANGO_SETTINGS_MODULE` environment var
 - Routes logging for production
 - Defines the WSGI app
 
-### manage.py
-
-- Uses path-fixing mechanisms in order for tests to run properly
-
-### settings.py
+### djappengine/settings.py
 
 - Usual Django defaults
 - Sets the `SESSION_ENGINE` to a custom memcache/datastore session backend
 
-### lib/environ.py
+### djappengine/core
 
-- Uses various internal SDK functions to set up the system environment in such a way that things will run in the context of Appengine's service stubs
+- A simple example app to get you started
 
 ### lib/memcache.py
 
@@ -77,11 +81,6 @@ CloudSQL, comment out the [TEST_RUNNER](https://github.com/potatolondon/djappeng
 ### lib/testrunnernodb.py
 
 - A custom test runner that lets you use Django's simple test runner to run tests with [App Engine's testbed](https://developers.google.com/appengine/docs/python/tools/localunittesting) and without a database.
-
-### core
-
-- A simple example app to get you started
-
 
 ## What's missing
 

@@ -16,16 +16,23 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-# A custom cache backend using AppEngine's memcached
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'TIMEOUT': 0,
+if not DEBUG:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',            
+            'TIMEOUT': PUBLIC_CACHE_TIME,
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
+
 
 # If you are using CloudSQL, you can comment out the next line
-TEST_RUNNER = 'lib.testrunnernodb.TestRunnerNoDb'
+TEST_RUNNER = 'testrunnernodb.TestRunnerNoDb'
 
 """
 Custom session engine using our cache or writing through to the datastore If
@@ -146,9 +153,10 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'djappengine.urls'
 
 TEMPLATE_DIRS = (
+    os.path.join(PROJDIR, "templates"),
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -161,7 +169,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',
+    'djappengine.core',
     'appengine_sessions',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',

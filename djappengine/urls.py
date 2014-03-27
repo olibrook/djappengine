@@ -1,9 +1,11 @@
 from django.conf import settings
-from django.conf.urls.defaults import url, patterns
+from django.conf.urls import include, patterns, url
 
 
-urlpatterns = patterns('core.views',
-    url(r'^$', 'hello_world', {}, name='hello-world'),
+urlpatterns = patterns('',
+    (r'^appengine_sessions/', include('appengine_sessions.urls')),
+
+    (r'', include('djappengine.core.urls')),
 )
 
 

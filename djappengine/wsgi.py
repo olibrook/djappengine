@@ -1,9 +1,12 @@
+import logging
 import os
 import sys
-import logging
-sys.path.extend(['lib'])
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+from environ import add_lib_to_path
+
+add_lib_to_path()
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'djappengine.settings'
 
 os.environ['APPENGINE_PRODUCTION'] = \
     os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine') or\

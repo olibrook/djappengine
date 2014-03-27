@@ -6,16 +6,17 @@ backend is in settings.
 Basically a reworking of django.contrib.sessions.backends.db, so have
 a look there for definitive docs.
 """
+from datetime import datetime, timedelta
 
 from google.appengine.ext import ndb
-from appengine_sessions.models import Session
 
 from django.contrib.sessions.backends.base import CreateError
 from django.contrib.sessions.backends.db import SessionStore as DBStore
 from django.core.exceptions import SuspiciousOperation
 from django.utils.encoding import force_unicode
 from django.conf import settings
-from datetime import datetime, timedelta
+
+from appengine_sessions.models import Session
 
 
 class SessionStore(DBStore):

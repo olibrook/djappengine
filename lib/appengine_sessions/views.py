@@ -1,8 +1,8 @@
-from appengine_sessions.backends.db import SessionStore
+from datetime import datetime
+
 from appengine_sessions.mapper import DeleteMapper
 from appengine_sessions.models import Session
-from datetime import datetime
-from django.contrib.sessions.backends.base import SessionBase
+
 from django.http import HttpResponse
 from django.views.generic.base import View
 

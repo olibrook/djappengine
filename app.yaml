@@ -9,26 +9,26 @@ builtins:
 
 libraries:
 - name: django
-  version: "1.4"
+  version: "1.5"
 
 inbound_services:
 - warmup
 
 handlers:
 - url: /static
-  static_dir: core/static
+  static_dir: djappengine/static
   expiration: '1m'
 
 - url: /favicon.ico
-  static_files: favicon.ico
-  upload: favicon.ico
+  static_files: djappengine/static/root/favicon.ico
+  upload: djappengine/static/root/favicon.ico
 
 - url: /appengine_sessions/clean-up/
-  script: main.app
+  script: djappengine.wsgi.app
   login: admin
 
 - url: /.*
-  script: main.app
+  script: djappengine.wsgi.app
 
 skip_files:
 - ^(.*/)?app.yaml

@@ -1,17 +1,20 @@
+from datetime import datetime, timedelta
+from unittest import TestCase
+
+from google.appengine.ext import testbed, ndb
+
+from django.conf import settings
+from django.core.cache import cache
+from django.http import HttpResponse
+from django.test.client import Client
+from django.test.utils import override_settings
+
 from appengine_sessions.backends import cached_db
 from appengine_sessions.backends.cached_db import SessionStore as CacheDBSession
 from appengine_sessions.backends.db import SessionStore as DatabaseSession
 from appengine_sessions.mapper import DeleteMapper
 from appengine_sessions.middleware import SessionMiddleware
 from appengine_sessions.models import Session
-from datetime import datetime, timedelta
-from django.conf import settings
-from django.core.cache import cache
-from django.http import HttpResponse
-from django.test.client import Client
-from django.test.utils import override_settings
-from google.appengine.ext import testbed, ndb
-from unittest import TestCase
 
 # Use normal unittest.TestCase as Django TestCase requires a Database
 # These tests are using the stubbed appengine datastore
