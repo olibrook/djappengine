@@ -3,9 +3,12 @@
 
 ## Getting started
 
-Bootstrap a new project using `djappengine-template` (assumes a previous django installation somewhere).
+Bootstrap a new project using `djappengine-template`:
 
-  django-admin.py startproject myproject --template=https://github.com/olibrook/djappengine-template/archive/master.zip --extension=yaml,cfg,md
+  mkvirtualenv myproject
+  workon myproject
+  pip install cookiecutter
+  cookiecutter https://github.com/olibrook/djappengine-template
 
 Then follow the steps in the generated project README.
 
