@@ -1,87 +1,15 @@
-# A streamlined Django 1.5 and App Engine integration.
+# A Django 1.5 and App Engine integration library
 
-## Requirements
-
-Google Appengine Python SDK 1.8.9+. Older versions probably still work, though.
 
 ## Getting started
 
-Run locally:
+Bootstrap a new project using `djappengine-template` (assumes a previous django installation somewhere).
 
-    git clone git@github.com:potatolondon/djappengine.git
-    cd djappengine
-    ./serve.sh
+  django-admin.py startproject myproject --template=https://github.com/olibrook/djappengine-template/archive/master.zip --extension=yaml,cfg,md
 
-Visit <http://localhost:8080> to marvel at your work.
+Then follow the steps in the generated project README.
 
-Now deploy to appspot, first set up an app on <http://appengine.google.com> and replace `application` in `app.yaml` with the name of your app (in your text editor or like this):
 
-    sed -i '' 's/djappeng1ne/myappid/' app.yaml
+## Something missing?
 
-You're ready to deploy:
-
-    appcfg.py update .
-
-The Django app in `core` is there to get you started. Have a look around.
-
-## Local shell
-
-With your local server stopped, open a python shell and play with your local data:
-
-    ./shell
-
-## Running tests
-
-    python manage.py test core
-    .
-    ----------------------------------------------------------------------
-    Ran 1 test in 0.000s
-
-djappengine uses a custom test runner that doesn't try to use a database. This is because djappengine is designed primarily to be used with 
-[App Engine's models](https://developers.google.com/appengine/docs/python/datastore/datamodeling), and not with Django's ORM. If you're using
-CloudSQL, comment out the [TEST_RUNNER](https://github.com/potatolondon/djappengine/blob/master/settings.py#L29) line in `settings.py`.
-
-[djappengine/core/tests.py](https://github.com/potatolondon/djappengine/blob/django-1.5/djappengine/core/tests.py) is an example test that sets App Engine's 
-[testbed](https://developers.google.com/appengine/docs/python/tools/localunittesting).
-
-## So what's going on?
-
-### app.yaml
-
-- Sets up static resources
-- Points all other paths to the WSGI app
-
-### manage.py
-
-- Uses path-fixing mechanisms in order for tests to run properly
-
-### environ.py
-
-- Uses various internal SDK functions to set up the system environment in such a way that things will run in the context of Appengine's service stubs
-
-### djappengine/wsgi.py
-
-- Sets the `DJANGO_SETTINGS_MODULE` environment var
-- Routes logging for production
-- Defines the WSGI app
-
-### djappengine/settings.py
-
-- Usual Django defaults
-- Sets the `SESSION_ENGINE` to a custom memcache/datastore session backend
-
-### djappengine/core
-
-- A simple example app to get you started
-
-### lib/memcache.py
-
-- So App Engine's memcache is seen by django
-
-### lib/testrunnernodb.py
-
-- A custom test runner that lets you use Django's simple test runner to run tests with [App Engine's testbed](https://developers.google.com/appengine/docs/python/tools/localunittesting) and without a database.
-
-## What's missing
-
-Something missing? [please raise an issue](https://github.com/potatolondon/djappengine/issues?state=open).
+[Raise an issue](https://github.com/olibrook/djappengine/issues?state=open).
